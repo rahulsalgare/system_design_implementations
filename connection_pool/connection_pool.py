@@ -32,3 +32,4 @@ class ConnectionPool:
         for con in self.pool:
             if con.connection == connection_to_close:
                 con.lock.release()
+                break
