@@ -22,7 +22,7 @@ class ConnectionPool:
                 con.lock.acquire()
                 return con.connection
 
-        if (len(self.pool) == 0) or (len(self.pool) < self.pool_size):
+        if len(self.pool) < self.pool_size:
             conn = Connection(self.connection)
             self.pool.append(conn)
             conn.lock.acquire()
