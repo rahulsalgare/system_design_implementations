@@ -16,9 +16,15 @@ def book_seat(user_id):
         in that case if first user had got seat with user_id NULL, after he writes user_id with some value,
         the other thread wont get the same row since that rows user_id is not NULL anymore.
         
-        Lock is released when the transaction is commmited. in this case connection.commit()
+        adding SKIP LOCKED will skip the row which is locked and immediately reevaluates to get the next row which is
+        not locked. Advantage of this is threads won't have to wait for a lock to be released since that row (seat) is 
+        going to be already filled by a thread which locked it, which would disappoint every thread waiting on that row,
+        and then every thread re-evaluating the query to find an empty seat. lot of time is saved after adding SKIP LOCKED     
+        
+        Lock is released when the transaction is committed. in this case connection.commit()
         """
-        cursor.execute("SELECT seat_id FROM seats WHERE user_id IS NULL ORDER BY seat_id LIMIT 1 FOR UPDATE;")
+        cursor.execute(
+            "SELECT seat_id FROM seats WHERE user_id IS NULL ORDER BY seat_id LIMIT 1 FOR UPDATE SKIP LOCKED;")
         seat = cursor.fetchone()[0]
         cursor.execute(f"UPDATE seats SET user_id={user_id} WHERE seat_id={seat}")
     except Exception as e:
